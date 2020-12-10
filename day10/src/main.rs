@@ -187,9 +187,7 @@ fn main() {
 
     println!("--- Part 1 ---\n{:#?}\n{} * {} = {}", diff, diff.one, diff.three, diff.one*diff.three);
 
-    println!("\n--- Part 2 ---\nValid Combinations: {}", find_valid_combinations(&adapters));
-
-    println!("\n--- General Solution ---\nValid Combinations: {}", valid_combinations_general(&adapters));
+    println!("\n--- Part 2 ---\nValid Combinations: {}", valid_combinations(&adapters));
 }
 
 /// Read in lines of a file to a vector
@@ -230,76 +228,6 @@ fn sum_rating_differences(adapters: &Vec<Adapter>) -> Differences {
     diff
 }
 
-
-/// Finds the valid number of ways of chaining the given adapters to go
-/// from the smallest value to the largest.
-/// 
-/// Uses the fact that since all gaps are either 3 or 1 the number of
-/// combinations is based solely on the length of each run of numbers.
-/// Given a run of known length, the number of combinations can be found
-/// from a fibbonacci like sequence where the previous three terms are
-/// summed and the first three terms are 1, 1, 2.
-/// 
-/// This results in the values for the first few run lengths being:
-/// * 1 - 1
-/// * 2 - 1
-/// * 3 - 2
-/// * 4 - 4
-/// * 5 - 7
-/// * 6 - 13
-/// * ...
-/// 
-/// By then multiplying these together you get the total number of valid
-/// combinations.
-/// 
-/// # Arguments
-/// 
-/// * `adapters` an unsorted list of available adapters
-/// 
-/// # returns
-/// 
-/// * The number of valid combinations
-fn find_valid_combinations(adapters: &Vec<Adapter> ) -> u64 {
-    let mut result = 1;
-    let mut sorted = adapters.clone();
-    sorted.sort();
-
-    let mut run = 1;
-    let mut prev: Option<Adapter> = None;
-    for adapter in sorted {
-        if let Some(pre) = prev {
-            match adapter - pre {
-                1 => run += 1,
-                _ => {
-                    result *= fibbonacci_three(run);
-                    run = 1;
-                }
-            }        
-        }
-        prev = Some(adapter);
-    }
-    result
-}
-
-/// Calculate the fibbonaci sequence where we sum the three
-/// previous numbers. The first three terms are 1, 1, 2. 
-fn fibbonacci_three(run: u64) -> u64 {
-    let mut sequence = Vec::new();
-    for i in 1..=run {
-        match i {
-            1 => sequence.insert(0, 1),
-            2 => sequence.insert(0, 1),
-            3 => sequence.insert(0, 2),
-            _ => {
-                sequence.insert(0, sequence.iter().sum());
-                sequence.pop();
-            }
-        }
-    }
-    sequence[0]
-}
-
-
 /// General solution for finding valid combinations of any set of adapters.
 /// This works no matter what gaps exist between the starting set but does
 /// assume a valid solution exists.
@@ -311,7 +239,7 @@ fn fibbonacci_three(run: u64) -> u64 {
 /// # Returns
 /// 
 /// * the valid number of possible combinations spanning the smallest to largest value.
-fn valid_combinations_general(adapters: &Vec<Adapter>) -> u64 {
+fn valid_combinations(adapters: &Vec<Adapter>) -> u64 {
     let mut sorted = adapters.clone();
     sorted.sort();
     let mut map: Vec<AdapterMap> = Vec::new();
