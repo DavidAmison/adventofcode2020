@@ -64,8 +64,7 @@
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-mod ship;
-pub use ship::{Ship1, Ship2, Position};
+use ships::{Ship1, Ship2, Position};
 
 fn main() {
     let mut instructions = read_in_lines("src/directions.txt");
