@@ -118,6 +118,7 @@ struct West;
 
 /// Structure for storing a position in N, E co-ordinates
 #[derive(Debug, Copy, Clone)]
+#[allow(non_snake_case)]
 struct Position {
     N: Direction<North>,
     E: Direction<East>,
