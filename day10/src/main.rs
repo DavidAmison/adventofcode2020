@@ -131,15 +131,15 @@ use std::io::{BufRead, BufReader};
 
 type Adapter = u32;
 
+/// A structure to hold the adapters along with how many others it is able to connect to.
 #[derive(Debug)]
 struct AdapterMap {
     adapter: Adapter,
     possible_connections: u64,
 }
 
-/// A structure for storing the differences between the chain
-/// of adapters. The maximum difference considered is three and
-/// minimum is one
+/// A structure for storing the differences between the chain of adapters.
+/// The maximum difference considered is three and minimum is one
 #[derive(Debug)]
 struct Differences {
     one: u32,
