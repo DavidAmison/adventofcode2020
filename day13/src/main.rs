@@ -104,7 +104,6 @@
 
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::collections::HashMap;
 
 fn main() {
     let timetable = read_in_comma_separated("src/timetable.txt");
