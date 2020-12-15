@@ -62,7 +62,6 @@ fn main() {
     println!("30,000,000th term: {}", memory_game_find_nth(input, 30000000));    
 }
 
-
 /// Find the nth term given the initial input terms
 /// 
 /// # Arguments
@@ -73,27 +72,38 @@ fn main() {
 /// # Returns
 /// 
 /// * the nth value in the sequence
-fn memory_game_find_nth(initial_input: &str, n: usize) -> u64 {
+fn memory_game_find_nth(initial_input: &str, n: usize) -> usize {
     // Hash map which stores the number and the last time it appeared
-    let mut last_appearance: HashMap<u32, usize> = HashMap::new(); 
-    let mut length = 0;
+    let mut last_appearance: Vec<usize> = Vec::new(); 
+    let mut length = 1;
     for (i, x) in initial_input.split(',').enumerate() {
-        last_appearance.insert(x.parse::<u32>().unwrap(), i);
+        let value = x.parse::<usize>().unwrap();
+        if let Some(index) = last_appearance.get_mut(value) {
+            *index = length;
+        } else {
+            last_appearance.resize( (value + 1) * 2, 0);
+            last_appearance[value] = length;
+        }
         length += 1;                
     }
-
-    let mut last: u32 = 0;
-    let mut next: u32 = 0;
-    for i in length..n {
+    
+    let mut last = 0;
+    let mut next = 0;
+    for i in length..n+1 {
         last = next;
-        if let Some(j) = last_appearance.get(&last) {
-            next = (i-j) as u32
+        if let Some(j) = last_appearance.get_mut(last) {
+            if *j == 0 {
+                next = 0;
+            } else {
+                next = i - *j;
+            }
+            *j = length;
         } else {
-            next = 0;            
+            last_appearance.resize((last + 1) * 2, 0);
+            last_appearance[last] = length;
+            next = 0;
         }
-        last_appearance.insert(last, i);
         length += 1;
-        // println!("Term {} is {}", length, last)
     }
-    last as u64
+    last
 }
