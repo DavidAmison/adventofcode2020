@@ -50,7 +50,6 @@
  * Given your starting numbers, what will be the 30000000th number spoken?
  */
 
-use std::collections::HashMap;
 
 fn main() {
     let input = "6,4,12,1,20,0,16";
@@ -76,7 +75,7 @@ fn memory_game_find_nth(initial_input: &str, n: usize) -> usize {
     // Hash map which stores the number and the last time it appeared
     let mut last_appearance: Vec<usize> = Vec::new(); 
     let mut length = 1;
-    for (i, x) in initial_input.split(',').enumerate() {
+    for (_, x) in initial_input.split(',').enumerate() {
         let value = x.parse::<usize>().unwrap();
         if let Some(index) = last_appearance.get_mut(value) {
             *index = length;
