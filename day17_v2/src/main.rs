@@ -32,8 +32,7 @@ fn part_one() {
         }
     }
 
-    for i in 0..41 {
-        println!("Loop {}", i);
+    for _ in 0..6 {
         let mut next_space = Space::new();
         for (p, v) in space.points() {
             let s = space.sum_around_point(*p);

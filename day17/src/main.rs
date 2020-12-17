@@ -25,8 +25,7 @@ fn part_one() {
     let mut lx = initial_layout[0][0].len();
     let mut current = initial_layout.clone();  
 
-    for i in 0..41 {
-        println!("Loop {}", i);
+    for _ in 0..6 {
         // Resize the matrix    
         current.push(vec!(vec!('.'; lx); ly));
         current.insert(0, vec!(vec!('.'; lx); ly));
