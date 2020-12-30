@@ -1,104 +1,97 @@
+// mod linked_list;
+// use linked_list::LinkedList;
+
+mod circular_list;
+use circular_list::{CircularList, CircularListPointer};
+
 fn main() {
     part1();
-    // part2();
+    part2();
+    println!("Part 2 complete");
 }
 
 fn part1() {
-    let mut cups: Vec<u32> = vec!(3,9,4,6,1,8,5,2,7);
-    // let mut cups: Vec<u32> = vec!(3,8,9,1,2,5,4,6,7);
+    let mut cups = CircularList::from_vec(vec!(3,9,4,6,1,8,5,2,7));
+    // cups.print();
+    
     for _ in 0..100 {
-        let current = cups.remove(0);
-        let pickup1 = cups.remove(0);
-        let pickup2 = cups.remove(0);
-        let pickup3 = cups.remove(0);
+        let mut insert_positon = CircularListPointer::new(cups.pointer.unwrap());
+        let current = cups.get(0).unwrap().value();
+        let pickup1 = cups.get(1).unwrap().value();
+        let pickup2 = cups.get(2).unwrap().value();
+        let pickup3 = cups.get(3).unwrap().value();
+        // Find the value we should be moving everything to
         let mut destination = circular_subtract(current, 9);
-        let i;
-        loop {
-            if let Some(ind) = index(&cups, destination) {
-                i = ind;
-                break;
-            } else {
-                destination = circular_subtract(destination, 9);
-            }
+        while destination == current || destination == pickup1 || destination == pickup2 || destination == pickup3 {
+            destination = circular_subtract(destination, 9);
         }
-        cups.insert(i+1, pickup3);
-        cups.insert(i+1, pickup2);
-        cups.insert(i+1, pickup1);
-        cups.push(current);
-    }
-    loop {
-        let v = cups.remove(0);
-        if v == 1 {
-            break;
-        } else {
-            cups.push(v);
+        // Move the insert_position pointer to the destination
+        while insert_positon.value(&cups).unwrap() != destination {
+            insert_positon.next(&cups);
         }
+        let d = insert_positon.index(&cups);
+        // Move the picked-up cups
+        cups.move_after(1, d);
+        cups.move_after(1, d);
+        cups.move_after(1, d);
+        
+        cups.increment_pointer();
     }
-    println!("");
-    for c in cups {
-        print!("{}", c);
+    // cups.print();
+
+    while cups.get(0).unwrap().value() != 1 {
+        cups.increment_pointer();
     }
-    println!("");
+    cups.print();
+
+    // println!("");
+    // loop {
+    //     cups.increment_pointer();
+    //     if let Some(c) = cups.get(0) {
+    //         if c.value() == 1 {
+    //             break;
+    //         } else {
+    //             print!("{}", c.value());
+    //         }
+    //     }
+    // }
+    // println!("");
 
 }
 
 fn part2() {
-    let mut cups: Vec<u32> = vec!(3,9,4,6,1,8,5,2,7);
-    for i in 10..1000001 {
-        cups.push(i);
+    let mut cups_vector: Vec<u32> = vec!(3,9,4,6,1,8,5,2,7);
+    for i in 10..=1000000 {
+        cups_vector.push(i);
     }
-    println!("Cups populated");
-    println!("{}", cups.iter().max().unwrap());
-    // let mut cups: Vec<u32> = vec!(3,8,9,1,2,5,4,6,7);
-    for _ in 0..10000 {
-        let mut next = Vec::new(); 
-        let current = cups.remove(0);
-        let pickup1 = cups.remove(0);
-        let pickup2 = cups.remove(0);
-        let pickup3 = cups.remove(0);
-        let mut destination = circular_subtract(current, 1000000);
-        while destination == current || destination == pickup1 || destination == pickup2 || destination == pickup3 {
-            destination = circular_subtract(destination, 1000000);
-        }
-        // println!("Destination: {}", destination);
-        for cup in &cups {
-            next.push(*cup);
-            if cup == &destination {
-                // Insert the picked-up cooks
-                // println!("Inserting picked-up cups {},{},{} after {}", pickup1, pickup2, pickup3, cup);
-                next.push(pickup1);
-                next.push(pickup2);
-                next.push(pickup3);
-            }
-        }
-        next.push(current);
-        cups = next;
-        // let i = index(&cups, destination).unwrap();
-        // println!("index: {}, cups: {}", i, cups.len());
-        // cups.insert(i+1, pickup3);
-        // cups.insert(i+1, pickup2);
-        // cups.insert(i+1, pickup1);
-        // cups.push(current);
-    }
+
+    let mut cups = CircularList::from_vec(cups_vector);
+    // cups.print();
     
-    // while let cup = cups.remove(0) {
-    //     if cup == 1 {
-    //         break
-    //     }
-    // }
-
-    // println!("{:?}", cups.remove(0));
-    // println!("{:?}", cups.remove(0));
-}
-
-fn index(vector: &Vec<u32>, value: u32) -> Option<usize> {
-    println!("Searching for {}", value);
-    for i in 0..vector.len() {
-        if value == vector[i] {
-            return Some(i)
+    for _ in 0..1000 {
+        let mut insert_positon = CircularListPointer::new(cups.pointer.unwrap());
+        let current = cups.get(0).unwrap().value();
+        let pickup1 = cups.get(1).unwrap().value();
+        let pickup2 = cups.get(2).unwrap().value();
+        let pickup3 = cups.get(3).unwrap().value();
+        // Find the value we should be moving everything to
+        let mut destination = circular_subtract(current, 9);
+        while destination == current || destination == pickup1 || destination == pickup2 || destination == pickup3 {
+            destination = circular_subtract(destination, 9);
         }
+        // Move the insert_position pointer to the destination
+        while insert_positon.value(&cups).unwrap() != destination {
+            insert_positon.next(&cups);
+        }
+        let d = insert_positon.index(&cups);
+        // Move the picked-up cups
+        cups.move_after(1, d);
+        cups.move_after(1, d);
+        cups.move_after(1, d);
+        
+        cups.increment_pointer();
     }
-    return None
+    // cups.print();
 }
 
 fn circular_subtract(v: u32, max: u32) -> u32 {
