@@ -2,18 +2,23 @@
 #[derive(Debug, Clone)]
 pub struct CircularListValue {
     value: u32,
-    next_index: Option<usize>,
-    index: usize,
-    prev_index: Option<usize>,
+    next: usize,
 }
 
 impl CircularListValue {
-    pub fn next(&self) -> Option<usize> {
-        self.next_index
+    /// Return the index of the next value
+    pub fn next(&self) -> usize {
+        self.next
     }
 
+    /// Return the value
     pub fn value(&self) -> u32 {
         self.value
+    }
+
+    /// Set the index of the next value
+    pub fn set_next(&mut self, next: usize) {
+        self.next = next;
     }
 }
 
@@ -24,110 +29,39 @@ pub struct CircularList {
 }
 
 impl CircularList {
-    pub fn new() -> Self {
-        CircularList {
-            values: Vec::new(),
-            pointer: None,
-        }
-    }
-
     /// Create a circular list from a vector
     pub fn from_vec(values: Vec<u32>) -> Self {
         let mut list = Vec::new();
         for (i, value) in values.iter().enumerate() {
-            if i == 0 {
-                // First Value
-                list.push( CircularListValue{
-                    value: value.clone(),
-                    next_index: Some(i+1),
-                    index: i,
-                    prev_index: Some(values.len() - 1),
-                })
-            } else if i < (values.len() - 1) {
+            if i < (values.len() - 1) {
                 // Middle values
                 list.push( CircularListValue{
                     value: value.clone(),
-                    next_index: Some(i+1),
-                    index: i,
-                    prev_index: Some(i-1),
+                    next: i+1,
                 })
             } else {
                 // Last Value
                 list.push( CircularListValue{
                     value: value.clone(),
-                    next_index: Some(0),
-                    index: i,
-                    prev_index: Some(i-1),
+                    next: 0,
                 })
             }
         }
-        // list.last_mut().unwrap().next_index = None;
         CircularList {
             values: list,
             pointer: Some(0),
         }
     }
 
-    pub fn insert_after(&mut self, value: u32, index: usize) {
-        self.values.push( CircularListValue{ 
-            value: value,
-            next_index: self.values[index].next(),
-            index: self.values.len() - 1,
-            prev_index: Some(index),
-        });
-        self.values[index].next_index = Some(self.values.len() - 1);
-    }
-
-    pub fn move_after(&mut self, origin: usize, destination: usize) {
-        // Moving round a lot of indexes which is unsafe rust but should be safe...
-        unsafe {
-            let o = self.get_mut(origin).unwrap() as *mut CircularListValue;
-            let d = self.get_mut(destination).unwrap() as *mut CircularListValue;
-            // Change references in node before origin
-            let o_p;
-            if let Some(i) = (*o).prev_index {
-                o_p = &mut self.values[i] as *mut CircularListValue;
-                (*o_p).next_index = (*o).next_index;
-            }
-            // Change references in node after origin
-            let o_n;
-            if let Some(i) = (*o).next_index {
-                o_n = &mut self.values[i] as *mut CircularListValue;
-                (*o_n).prev_index = (*o).prev_index;
-            }
-            
-            // Change references in node after destination
-            let d_n;
-            if let Some(i) = (*d).next_index {
-                d_n = &mut self.values[i] as *mut CircularListValue;
-                (*d_n).prev_index = Some((*o).index);
-            }            
-
-            // Change references in origin
-            (*o).prev_index = Some((*d).index);
-            (*o).next_index = (*d).next_index;
-            
-            // Change references in destination
-            (*d).next_index = Some((*o).index);
-        }
-    }
-
-    pub fn get_mut(&mut self, index: usize) -> Option<&mut CircularListValue> {
-        if self.pointer.is_none() {
-            return None
-        }
-
-        let mut pointer = self.pointer.unwrap();
-        for _ in 0..index {
-            if let Some(p) = self.values[pointer].next_index {
-                pointer = p;
-            } else {
-                return None
-            }
-        }
-        self.values.get_mut(pointer)
-    }
-
+    /// Get the value at the given index (starting at the current pointer)
+    /// 
+    /// # Arguments
+    /// 
+    /// * `index` the index to return
+    /// 
+    /// # Returns
+    /// 
+    /// * the CircularListValue at the given index
     pub fn get(&self, index: usize) -> Option<&CircularListValue> {
         if self.pointer.is_none() {
             return None
@@ -135,21 +69,44 @@ impl CircularList {
 
         let mut pointer = self.pointer.unwrap();
         for _ in 0..index {
-            if let Some(p) = self.values[pointer].next_index {
-                pointer = p;
-            } else {
-                return None
-            }
+            pointer = self.values[pointer].next();
         }
         self.values.get(pointer)
     }
 
+    /// Get a vector of the values between the given indeces (inclusive)
+    /// 
+    /// # Arguments
+    /// 
+    /// * `start` the start index of the slice
+    /// * `end` the end index of the slice
+    /// 
+    /// # Returns
+    /// * A vector of the values between the start and end indeces
+    pub fn get_slice(&self, start: usize, end: usize) -> Option<Vec<u32>> {
+        if self.pointer.is_none() {
+            return None
+        }
+
+        let mut values = Vec::new();
+        let mut pointer = self.pointer.unwrap();
+        for i in 0..=end {
+            if i >= start && i <= end {
+                values.push(self.values[pointer].value());
+            }
+            pointer = self.values[pointer].next();
+        }
+        Some(values)
+    }
+
+    /// Move the pointer one place clockwise around the curcluar list
     pub fn increment_pointer(&mut self) {
         if let Some(i) = self.pointer {
-            self.pointer = self.values[i].next_index;
+            self.pointer = Some(self.values[i].next);
         }
     }
 
+    // Print all elements in the curcular list - starting from the current pointer
     pub fn print(&self) {
         if self.pointer.is_none() {
             return;
@@ -157,47 +114,30 @@ impl CircularList {
 
         let mut pointer = self.pointer.unwrap();
         print!("CircularList [{}", self.values[pointer].value());
-        while let Some(p) = self.values[pointer].next() {
+        loop {
+            let p = self.values[pointer].next();
             if p == self.pointer.unwrap() {
                 break
             }
             print!(", {}", self.values[p].value());
             pointer = p;
-
         }
         print!("]\n");
     }
-}
 
-pub struct CircularListPointer {
-    index: Option<usize>,
-    counter: usize,
-}
-
-impl CircularListPointer {
-    pub fn new(index: usize) -> Self {
-        CircularListPointer{
-            index: Some(index),
-            counter: 0,
+    /// Print the first n elements of the circular list - starting from the current pointer
+    pub fn printn(&self, n: usize) {
+        if self.pointer.is_none() {
+            return;
         }
-    }
 
-    pub fn next(&mut self, list: &CircularList) {
-        if let Some(i) = self.index {
-            self.index = list.values[i].next_index;
-            self.counter += 1;
+        let mut pointer = self.pointer.unwrap();
+        print!("CircularList [{}", self.values[pointer].value());
+        for _ in 0..n {
+            let p = self.values[pointer].next();
+            print!(", {}", self.values[p].value());
+            pointer = p;
         }
-    }
-
-    pub fn value(&self, list: &CircularList) -> Option<u32> {
-        if let Some(i) = self.index {
-            Some(list.values[i].value)
-        } else {
-            None
-        }
-    }
-
-    pub fn index(&self, list: &CircularList) -> usize {
-        self.counter
+        print!(" ... ]\n");
     }
 }
