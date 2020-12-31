@@ -113,10 +113,10 @@ fn play_game_recurse(h1: &mut Vec<usize>, h2: &mut Vec<usize>) -> usize {
             // println!("P1:{} P2:{} H1:{} H2:{}", p1, p2, h1.len(), h2.len());
             if p1 <= h1.len() && p2 <= h2.len() {
                 // Recurse
-                let l1 = h1.len();
-                let l2 = h2.len();
-                let mut h1t = Vec::from_iter(h1[l1-p1..].iter().cloned());
-                let mut h2t = Vec::from_iter(h2[l2-p2..].iter().cloned());
+                let i1 = h1.len() - p1;
+                let i2 = h2.len() - p2;
+                let mut h1t = Vec::from_iter(h1[i1..].iter().cloned());
+                let mut h2t = Vec::from_iter(h2[i2..].iter().cloned());
                 winner = play_game_recurse(&mut h1t, &mut h2t);
                 // println!("--- END GAME ---\n");
                 // println!("Recursive Round won by P{}", winner);
