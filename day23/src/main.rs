@@ -110,8 +110,9 @@ fn part2() {
     }
 
     cups.pointer = Some(0);
-    cups.printn(5);
-    println!("{}", cups.get(1).unwrap().value() as u64 * cups.get(2).unwrap().value() as u64);
+    cups.printn(15);
+    // Numbers too big for u32
+    println!("Solution: {}", cups.get(1).unwrap().value() as u64 * cups.get(2).unwrap().value() as u64);
 }
 
 fn circular_subtract(v: u32, max: u32) -> u32 {
