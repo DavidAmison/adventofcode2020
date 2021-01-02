@@ -1,48 +1,43 @@
 mod rules;
-use std::collections::HashMap;
-
-extern crate regex;
-use regex::Regex;
 
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 fn main() {
-    let mut rs = HashMap::new();
-    for line in read_in_lines("src/rules.txt") {
-        let temp: Vec<String> = line.split(':').map(|x| String::from(x.trim())).collect();
-        let id = temp[0].parse::<usize>().unwrap();
-        let rule = String::from(temp[1].trim_matches('"'));
-        rs.insert(id, rules::Rule{id, rule});
-    }
-    let r = Regex::new(&format!(r"{}{}{}", "\\b", rules::expand_rule(rs.get(&0).unwrap(), &rs), "\\b")).unwrap();
-    // println!("{:?}", r);
+    let mut rs = rules::read_in_rules("src/rules.txt");
+
+    println!("--- Part 1 ---");
+    let r0 = rs.get(&0).unwrap();
     let mut valid = 0;
     for message in read_in_lines("src/messages.txt") {
-        if r.is_match(&message) {
-            valid += 1;
-        }
-    }
-    println!("{}", valid);
-    
-
-
-    /*
-    let combinations =  rules::expand_rule(rs.get(&0).unwrap(), &rs);
-    // println!("{:?}", combinations);
-
-    let mut valid = 0;
-    for message in read_in_lines("src/messages.txt") {
-        if !combinations.contains(&message) {
-            // println!("{} is invalid", message);
+        let result = (*r0).evaluate(&message, &rs);
+        if result.contains(& Some(String::from(""))) {
+            // println!("{} is valid", message);  
+            valid += 1;          
         } else {
-            valid += 1;
-            // println!("{} is valid", message);
+            // println!("{} is invalid", message);
         }
     }
-    println!("{}", valid);
-    */
+    println!("{} messages are valid", valid);
 
+    println!("\n--- Part 2 ---");
+    // Modify the rules (8 and 11) to create a recursive rule
+    let r8 = rules::Rule { rule_type: rules::RuleType::Compound, rule: String::from("42 | 42 8") };
+    let r11 = rules::Rule { rule_type: rules::RuleType::Compound, rule: String::from("42 31 | 42 11 31") };
+    rs.insert(8, r8);
+    rs.insert(11, r11);
+    let r0 = rs.get(&0).unwrap();
+    valid = 0;
+    for message in read_in_lines("src/messages.txt") {
+        let result = (*r0).evaluate(&message, &rs);
+        if result.contains(& Some(String::from(""))) {
+            // println!("{} is valid", message);  
+            valid += 1;          
+        } else {
+            // println!("{} is invalid", message);
+        }
+    }
+    println!("{} messages are valid", valid);
 }
 
 /// Read in lines of a file to a vector
